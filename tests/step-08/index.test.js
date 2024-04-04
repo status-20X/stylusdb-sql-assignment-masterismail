@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const parseQuery = require('../../src/queryParser');
+const {parseQuery} = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -20,7 +20,9 @@ test('Parse SQL Query', () => {
         joinCondition: null,
         joinTable: null,
         joinType: null,
-        //joinType: 'INNER'
+        //joinType: 'INNER',
+        groupByFields: null,
+       hasAggregateWithoutGroupBy: false,
     });
 });
 
@@ -49,6 +51,8 @@ test('Parse SQL Query with WHERE Clause', () => {
         joinTable: null,
         joinType: null,
         //joinType: 'INNER'
+        groupByFields: null,
+       hasAggregateWithoutGroupBy: false,
     });
 });
 
@@ -80,6 +84,8 @@ test('Parse SQL Query with Multiple WHERE Clauses', () => {
         joinTable: null,
         joinType: null,
         //joinType: 'INNER'
+        groupByFields: null,
+       hasAggregateWithoutGroupBy: false,
     });
 });
 
@@ -114,7 +120,9 @@ test('Parse SQL Query with INNER JOIN', async () => {
         joinTable: 'enrollment',
         joinCondition: { left: 'student.id', right: 'enrollment.student_id' },
         joinType: null,
-        joinType: 'INNER'
+        joinType: 'INNER',
+        groupByFields: null,
+       hasAggregateWithoutGroupBy: false,
     })
 });
 
@@ -128,7 +136,9 @@ test('Parse SQL Query with INNER JOIN and WHERE Clause', async () => {
         joinTable: 'enrollment',
         joinCondition: { left: 'student.id', right: 'enrollment.student_id' },
         joinType: null,
-        joinType: 'INNER'
+        joinType: 'INNER',
+        groupByFields: null,
+       hasAggregateWithoutGroupBy: false,
     })
 });
 
