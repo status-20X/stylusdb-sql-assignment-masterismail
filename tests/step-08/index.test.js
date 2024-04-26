@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const {parseQuery} = require('../../src/queryParser');
+const { parseQuery } = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -22,8 +22,9 @@ test('Parse SQL Query', () => {
         joinType: null,
         //joinType: 'INNER',
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
@@ -53,8 +54,9 @@ test('Parse SQL Query with WHERE Clause', () => {
         joinType: null,
         //joinType: 'INNER'
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
@@ -87,8 +89,9 @@ test('Parse SQL Query with Multiple WHERE Clauses', () => {
         joinType: null,
         //joinType: 'INNER'
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
@@ -125,8 +128,9 @@ test('Parse SQL Query with INNER JOIN', async () => {
         joinType: null,
         joinType: 'INNER',
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     })
 });
 
@@ -142,8 +146,9 @@ test('Parse SQL Query with INNER JOIN and WHERE Clause', async () => {
         joinType: null,
         joinType: 'INNER',
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     })
 });
 

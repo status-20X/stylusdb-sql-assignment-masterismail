@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const {parseQuery }= require('../../src/queryParser');
+const { parseQuery } = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -19,10 +19,11 @@ test('Parse SQL Query', () => {
         whereClauses: [],
         joinCondition: null,
         joinTable: null,
-        joinType:null,
+        joinType: null,
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
@@ -43,16 +44,17 @@ test('Parse SQL Query with WHERE Clause', () => {
         fields: ['id', 'name'],
         table: 'student',
         whereClauses: [{
-          field: "age",
-          operator: "=",
-          value: "25",
+            field: "age",
+            operator: "=",
+            value: "25",
         }],
         joinCondition: null,
         joinTable: null,
-        joinType:null,
+        joinType: null,
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
@@ -82,10 +84,11 @@ test('Parse SQL Query with Multiple WHERE Clauses', () => {
         }],
         joinCondition: null,
         joinTable: null,
-        joinType:null,
+        joinType: null,
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 

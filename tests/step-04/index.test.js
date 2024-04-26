@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const {parseQuery }= require('../../src/queryParser');
+const { parseQuery } = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -21,8 +21,9 @@ test('Parse SQL Query', () => {
         joinType: null,
         joinTable: null,
         groupByFields: null,
-       hasAggregateWithoutGroupBy: false,
-       orderByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null,
+        limit: null,
     });
 });
 
