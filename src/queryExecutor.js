@@ -1,5 +1,7 @@
-const { parseSelectQuery, parseInsertQuery, parseDeleteQuery } = require('./queryParser');
-const { readCSV, writeCSV } = require('./csvReader');
+const { parseSelectQuery, parseInsertQuery, parseDeleteQuery } = require('./queryParser.js');
+const { readCSV, readCSVForHLL, writeCSV } = require('./csvStorage.js');
+const hll = require('hll');
+
 
 function performInnerJoin(data, joinData, joinCondition, fields, table) {
     return data.flatMap(mainRow => {
@@ -203,8 +205,14 @@ function applyGroupBy(data, groupByFields, aggregateFunctions) {
 
 async function executeSELECTQuery(query) {
     try {
+        const { fields, table, whereClauses, joinType, joinTable, joinCondition, groupByFields, hasAggregateWithoutGroupBy, isApproximateCount, orderByFields, limit, isDistinct, distinctFields, isCountDistinct } = parseSelectQuery(query);
 
-        const { fields, table, whereClauses, joinType, joinTable, joinCondition, groupByFields, hasAggregateWithoutGroupBy, orderByFields, limit, isDistinct } = parseSelectQuery(query);
+
+        if (isApproximateCount && fields.length === 1 && fields[0] === 'COUNT(*)' && whereClauses.length === 0) {
+            let hll = await readCSVForHLL(`${table}.csv`);
+            return [{ 'APPROXIMATE_COUNT(*)': hll.estimate() }];
+        }
+
         let data = await readCSV(`${table}.csv`);
 
         // Perform INNER JOIN if specified
@@ -228,6 +236,7 @@ async function executeSELECTQuery(query) {
         let filteredData = whereClauses.length > 0
             ? data.filter(row => whereClauses.every(clause => evaluateCondition(row, clause)))
             : data;
+
 
         let groupResults = filteredData;
         if (hasAggregateWithoutGroupBy) {
@@ -293,6 +302,20 @@ async function executeSELECTQuery(query) {
                 });
             }
 
+            // Distinct inside count - example "SELECT COUNT (DISTINCT student.name) FROM student"
+            if (isCountDistinct) {
+
+                if (isApproximateCount) {
+                    var h = hll({ bitSampleSize: 12, digestSize: 128 });
+                    orderedResults.forEach(row => h.insert(distinctFields.map(field => row[field]).join('|')));
+                    return [{ [`APPROXIMATE_${fields[0]}`]: h.estimate() }];
+                }
+                else {
+                    let distinctResults = [...new Map(orderedResults.map(item => [distinctFields.map(field => item[field]).join('|'), item])).values()];
+                    return [{ [fields[0]]: distinctResults.length }];
+                }
+            }
+
             // Select the specified fields
             let finalResults = orderedResults.map(row => {
                 const selectedRow = {};
@@ -302,6 +325,8 @@ async function executeSELECTQuery(query) {
                 });
                 return selectedRow;
             });
+
+            // console.log("CP-2", orderedResults)
 
             // Remove duplicates if specified
             let distinctResults = finalResults;
@@ -324,29 +349,57 @@ async function executeSELECTQuery(query) {
 }
 
 async function executeINSERTQuery(query) {
-    console.log(parseInsertQuery(query));
-    const { table, columns, values } = parseInsertQuery(query);
+    const { table, columns, values, returningColumns } = parseInsertQuery(query);
     const data = await readCSV(`${table}.csv`);
 
-    // Create a new row object
+    // Check if 'id' column is included in the query and in CSV headers
+    let newId = null;
+    if (!columns.includes('id') && data.length > 0 && 'id' in data[0]) {
+        // 'id' column not included in the query, so we auto-generate an ID
+        const existingIds = data.map(row => parseInt(row.id)).filter(id => !isNaN(id));
+        const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
+        newId = maxId + 1;
+        columns.push('id');
+        values.push(newId.toString()); // Add as a string
+    }
+
+    // Create a new row object matching the CSV structure
+    const headers = data.length > 0 ? Object.keys(data[0]) : columns;
     const newRow = {};
-    columns.forEach((column, index) => {
-        // Remove single quotes from the values
-        let value = values[index];
-        if (value.startsWith("'") && value.endsWith("'")) {
-            value = value.substring(1, value.length - 1);
+    headers.forEach(header => {
+        const columnIndex = columns.indexOf(header);
+        if (columnIndex !== -1) {
+            let value = values[columnIndex];
+            if (value.startsWith("'") && value.endsWith("'")) {
+                value = value.substring(1, value.length - 1);
+            }
+            newRow[header] = value;
+        } else {
+            newRow[header] = header === 'id' ? newId.toString() : '';
         }
-        newRow[column] = value;
     });
 
     // Add the new row to the data
     data.push(newRow);
 
     // Save the updated data back to the CSV file
-    await writeCSV(`${table}.csv`, data); // Implement writeCSV function
+    await writeCSV(`${table}.csv`, data);
 
-    return { message: "Row inserted successfully." };
+    // Prepare the returning result if returningColumns are specified
+    let returningResult = {};
+    if (returningColumns.length > 0) {
+        returningColumns.forEach(column => {
+            returningResult[column] = newRow[column];
+        });
+    }
+
+    return {
+        message: "Row inserted successfully.",
+        insertedId: newId,
+        returning: returningResult
+    };
 }
+
 
 async function executeDELETEQuery(query) {
     const { table, whereClauses } = parseDeleteQuery(query);
