@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const {parseQuery, parseJoinClause} = require('../../src/queryParser');
+const { parseQuery, parseJoinClause } = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -336,7 +336,7 @@ test('Parse SQL Query with INNER JOIN', async () => {
         hasAggregateWithoutGroupBy: false,
         "orderByFields": null,
         "limit": null,
-        isDistinct: false
+        "isDistinct": false
     })
 });
 
@@ -354,7 +354,7 @@ test('Parse SQL Query with INNER JOIN and WHERE Clause', async () => {
         hasAggregateWithoutGroupBy: false,
         "orderByFields": null,
         "limit": null,
-        isDistinct: false
+        "isDistinct": false
     })
 });
 
@@ -414,7 +414,7 @@ test('Parse LEFT Join Query Completely', () => {
         hasAggregateWithoutGroupBy: false,
         "orderByFields": null,
         "limit": null,
-        isDistinct: false
+        "isDistinct": false
     })
 })
 
